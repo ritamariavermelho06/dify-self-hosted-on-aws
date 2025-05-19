@@ -36,10 +36,19 @@ export class WebService extends Construct {
       runtimePlatform: { cpuArchitecture: CpuArchitecture.X86_64 },
     });
 
+  const dockerCredentials = Secret.fromSecretCompleteArn(
+  this,
+  'DockerCredentials',
+  'arn:aws:secretsmanager:us-east-1:698214542657:secret:dockercred-LCr5hY'
+  );
+
     taskDefinition.addContainer('Main', {
       image: customRepository
         ? ecs.ContainerImage.fromEcrRepository(customRepository, `dify-web_${props.imageTag}`)
         : ecs.ContainerImage.fromRegistry(`langgenius/dify-web:${props.imageTag}`),
+      repositoryCredentials: {
+      credentialsParameter: dockerCredentials.secretArn,
+      },
       environment: {
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
         LOG_LEVEL: debug ? 'DEBUG' : 'ERROR',
