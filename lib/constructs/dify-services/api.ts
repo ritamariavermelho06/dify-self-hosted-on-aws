@@ -69,10 +69,19 @@ export class ApiService extends Construct {
       },
     });
 
+  const dockerCredentials = Secret.fromSecretCompleteArn(
+  this,
+  'DockerCredentials',
+  'arn:aws:secretsmanager:us-east-1:698214542657:secret:dockercred-LCr5hY'
+  );
+    
     taskDefinition.addContainer('Main', {
       image: customRepository
         ? ecs.ContainerImage.fromEcrRepository(customRepository, `dify-api_${props.imageTag}`)
         : ecs.ContainerImage.fromRegistry(`langgenius/dify-api:${props.imageTag}`),
+      repositoryCredentials: {
+      credentialsParameter: dockerCredentials.secretArn,
+      },
       // https://docs.dify.ai/getting-started/install-self-hosted/environments
       environment: {
         MODE: 'api',
